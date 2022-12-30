@@ -5,12 +5,14 @@ import javax.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.azure.core.credential.TokenCredential;
-import com.azure.identity.ClientSecretCredential;
+
 import com.azure.identity.ClientSecretCredentialBuilder;
+
+import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.security.keyvault.certificates.CertificateClient;
 import com.azure.security.keyvault.certificates.CertificateClientBuilder;
 import com.azure.security.keyvault.certificates.models.CertificatePolicy;
-import com.azure.security.keyvault.certificates.models.KeyVaultCertificate;
+
 import com.azure.security.keyvault.keys.KeyClient;
 import com.azure.security.keyvault.keys.KeyClientBuilder;
 import com.azure.security.keyvault.keys.models.KeyVaultKey;
@@ -29,15 +31,28 @@ public class KeyVaultService {
     @ConfigProperty(name = "AzureSP.tenantId")
     String tenantId;
 
-    @ConfigProperty(name = "KeyVault.url")
-    String keyVaultUrl; 
+    @ConfigProperty(name = "Environment")
+    String Environment; 
 
-    public String getSecret(String secretName) {
+    final String DEVELOPMENT_ENV = "Dev";    
+    final String STAGING_ENV = "Stage";    
+    final String PRODUCTION_ENV = "Prod";   
+
+    @ConfigProperty(name = "Dev.KeyVault.url")
+    String devKeyVaultUrl; 
+
+    @ConfigProperty(name = "Stage.KeyVault.url")
+    String stageKeyVaultUrl;     
+
+    @ConfigProperty(name = "Prod.KeyVault.url")
+    String prodKeyVaultUrl;     
+
+    public String getSecret(String secretName) throws Exception {
         TokenCredential credential = getAzureCredential();
 
         // Azure SDK client builders accept the credential as a parameter.
         SecretClient secretClient = new SecretClientBuilder()
-            .vaultUrl(keyVaultUrl)
+            .vaultUrl( getKeyVaultUrl() )
             .credential(credential)
             .buildClient();
 
@@ -46,11 +61,11 @@ public class KeyVaultService {
         return secret;
     }
 
-    public String getKey(String keyName) {
+    public String getKey(String keyName) throws Exception {
         TokenCredential credential = getAzureCredential();
 
         KeyClient keyClient = new KeyClientBuilder()
-            .vaultUrl(keyVaultUrl)
+            .vaultUrl( getKeyVaultUrl() )
             .credential(credential)
             .buildClient();
 
@@ -59,12 +74,12 @@ public class KeyVaultService {
         return  key.getKey().toString();
     }
 
-    public String getCertificate(String certName) {
+    public String getCertificate(String certName) throws Exception {
         TokenCredential credential = getAzureCredential();
 
         // Azure SDK client builders accept the credential as a parameter.
         CertificateClient certificateClient = new CertificateClientBuilder()
-            .vaultUrl(keyVaultUrl)
+            .vaultUrl( getKeyVaultUrl() )
             .credential(credential)
             .buildClient();
 
@@ -74,17 +89,44 @@ public class KeyVaultService {
     }
 
 
-    private TokenCredential getAzureCredential() {
-        /**
-         *  Authenticate with client secret.
-         */
-        ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
-            .clientId(clientid)
-            .clientSecret(clientSecret)
-            .tenantId(tenantId)
-            .build();
+    private TokenCredential getAzureCredential() throws Exception {
 
-        return clientSecretCredential;
+        TokenCredential tokenCredential = null;
+        if( Environment.equalsIgnoreCase(DEVELOPMENT_ENV)) {
+            /**
+             *  Authenticate with client secret.
+             */
+            tokenCredential = new ClientSecretCredentialBuilder()
+                .clientId(clientid)
+                .clientSecret(clientSecret)
+                .tenantId(tenantId)
+                .build();
+        }
+        else {
+            /**
+             *  Assume we're running inside a container app.  Authenticate with managed identity of the app.
+             */            
+            tokenCredential = new ManagedIdentityCredentialBuilder().build();
+        }
+
+        if( tokenCredential == null ) {
+            throw new Exception("Failed to get credentials for Environment '" + Environment + "'");
+        }
+
+        return tokenCredential;
+    }
+
+    private String getKeyVaultUrl() throws Exception {
+        if( Environment.equalsIgnoreCase(DEVELOPMENT_ENV)) 
+            return devKeyVaultUrl;
+        else if( Environment.equalsIgnoreCase(STAGING_ENV)) 
+            return stageKeyVaultUrl;
+        else if( Environment.equalsIgnoreCase(PRODUCTION_ENV)) 
+            return prodKeyVaultUrl;
+        else {
+            throw new Exception("Invalid value '" + Environment + "' supplied for 'Environment'.  Valid values are Dev, Stage and Prod");
+        }
+    
     }
 
 }

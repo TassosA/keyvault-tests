@@ -15,7 +15,7 @@ public class KeyVaultResource  {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/secret/{secretName}")
-    public String getSecret(String secretName) {
+    public String getSecret(String secretName) throws Exception {
         String secretValue = keyVaultService.getSecret(secretName);
 
         System.out.println("Called '/keyvault/secret' endpoint for secret '" + secretName + "'; result is '" + secretValue + "'");           
@@ -25,7 +25,7 @@ public class KeyVaultResource  {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/key/{keyName}")
-    public String getKey(String keyName) {
+    public String getKey(String keyName) throws Exception {
         String key = keyVaultService.getKey(keyName);
 
         System.out.println("Called '/keyvault/key' endpoint for key '" + keyName + "'; result is '" + key + "'");           
@@ -35,7 +35,7 @@ public class KeyVaultResource  {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/certificate/{certName}")
-    public String getCertificate(String certName) {
+    public String getCertificate(String certName) throws Exception {
         String cert = keyVaultService.getCertificate(certName);
 
         System.out.println("Called '/keyvault/certificate' endpoint for certificate '" + certName + "'; result is '" + cert + "'");           
