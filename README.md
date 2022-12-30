@@ -1,79 +1,27 @@
-# Getting started with Quarkus
+KeyVaultTester
+==============
 
-This is a minimal CRUD service exposing a couple of endpoints over REST.
+This project is based on the "Getting started with Quarkus" samples
+You can find the original documentation of the sample at https://github.com/quarkusio/quarkus-quickstarts/blob/main/getting-started/README.md 
 
-Under the hood, this demo uses:
+KeyVaultTester can access three different vaults, depending on the value of the "Environment" property, which can be *Dev*, *Stage* or *Prod*.  The vault URL for each vault must be provided in the respective properties.  All properties are defined in the `application.properties' file. 
 
-- RESTEasy to expose the REST endpoints
-- REST-assured and JUnit 5 for endpoint testing
+For *Dev* environments, it is assumed that the code will run outside Azure, hence the authentication against the key vault must be done via an Azure service principal.  The clientId, clientSecret and tenantId values for the principal are also defined in the `application.properties` file.   For the other environments, it is assumed that the code will run inside an Azure Container App and will leverage Azure's managed identities to be granted access to the key vault.
 
-## Requirements
+KeyVaultTester by default listens at port 8080 and has the following GET endpoints:
+- `/keyvault/secret/{secretName}`, which returns the value of a secret 
+- `/keyvault/key/{keyName}`, which returns the contents of the key.  The code can be adjusted to perform any desired operation using the key.
+- `/keyvault/certificate/{certName}`, which returns the subject of a certificate.  The code can be adjusted to perform any desired operation using the certificate.
 
-To compile and run this demo you will need:
+In the `application.properties` file you will also find some test elements (i.e. secret, key and cert names) to use for calling the above endpoints.
 
-- JDK 11+
-- GraalVM
+Compilation commands:
+---------------------
+To compile it and run it in "normal" java, you can use one of the following:
+- `quarkus -dev` (if quarkus utility has been deployed, see https://quarkus.io/get-started/)
+- `./mvnw quarkus:dev`
 
-### Configuring GraalVM and JDK 11+
+If you wish to generate a container image, then pass `-Dquarkus.container-image.build=true` as a parameter.  Also take a look at https://quarkus.io/guides/container-image
 
-Make sure that both the `GRAALVM_HOME` and `JAVA_HOME` environment variables have
-been set, and that a JDK 11+ `java` command is on the path.
-
-See the [Building a Native Executable guide](https://quarkus.io/guides/building-native-image-guide)
-for help setting up your environment.
-
-## Building the application
-
-Launch the Maven build on the checked out sources of this demo:
-
-> ./mvnw package
-
-### Live coding with Quarkus
-
-The Maven Quarkus plugin provides a development mode that supports
-live coding. To try this out:
-
-> ./mvnw quarkus:dev
-
-This command will leave Quarkus running in the foreground listening on port 8080.
-
-1. Visit the default endpoint: [http://127.0.0.1:8080](http://127.0.0.1:8080).
-    - Make a simple change to [src/main/resources/META-INF/resources/index.html](src/main/resources/META-INF/resources/index.html) file.
-    - Refresh the browser to see the updated page.
-2. Visit the `/hello` endpoint: [http://127.0.0.1:8080/hello](http://127.0.0.1:8080/hello)
-    - Update the response in [src/main/java/org/acme/quickstart/GreetingResource.java](src/main/java/org/acme/quickstart/GreetingResource.java). Replace `hello` with `hello there` in the `hello()` method.
-    - Refresh the browser. You should now see `hello there`.
-    - Undo the change, so the method returns `hello` again.
-    - Refresh the browser. You should now see `hello`.
-
-### Run Quarkus in JVM mode
-
-When you're done iterating in developer mode, you can run the application as a
-conventional jar file.
-
-First compile it:
-
-> ./mvnw package
-
-Then run it:
-
-> java -jar ./target/quarkus-app/quarkus-run.jar
-
-Have a look at how fast it boots, or measure the total native memory consumption.
-
-### Run Quarkus as a native executable
-
-You can also create a native executable from this application without making any
-source code changes. A native executable removes the dependency on the JVM:
-everything needed to run the application on the target platform is included in
-the executable, allowing the application to run with minimal resource overhead.
-
-Compiling a native executable takes a bit longer, as GraalVM performs additional
-steps to remove unnecessary codepaths. Use the  `native` profile to compile a
-native executable:
-
-> ./mvnw package -Dnative
-
-After getting a cup of coffee, you'll be able to run this executable directly:
-
-> ./target/getting-started-1.0.0-SNAPSHOT-runner
+ ***Note***:  
+ When generating a container image, you may get an error from the checkstyle plugin about a missing dependency.  You can safely ignore this error. 
