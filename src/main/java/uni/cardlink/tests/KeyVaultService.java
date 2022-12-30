@@ -7,6 +7,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.security.keyvault.certificates.CertificateClient;
+import com.azure.security.keyvault.certificates.CertificateClientBuilder;
+import com.azure.security.keyvault.certificates.models.CertificatePolicy;
+import com.azure.security.keyvault.certificates.models.KeyVaultCertificate;
 import com.azure.security.keyvault.keys.KeyClient;
 import com.azure.security.keyvault.keys.KeyClientBuilder;
 import com.azure.security.keyvault.keys.models.KeyVaultKey;
@@ -28,6 +32,20 @@ public class KeyVaultService {
     @ConfigProperty(name = "KeyVault.url")
     String keyVaultUrl; 
 
+    public String getSecret(String secretName) {
+        TokenCredential credential = getAzureCredential();
+
+        // Azure SDK client builders accept the credential as a parameter.
+        SecretClient secretClient = new SecretClientBuilder()
+            .vaultUrl(keyVaultUrl)
+            .credential(credential)
+            .buildClient();
+
+        String secret = secretClient.getSecret(secretName).getValue();
+
+        return secret;
+    }
+
     public String getKey(String keyName) {
         TokenCredential credential = getAzureCredential();
 
@@ -41,18 +59,18 @@ public class KeyVaultService {
         return  key.getKey().toString();
     }
 
-    public String getSecret(String secretName) {
+    public String getCertificate(String certName) {
         TokenCredential credential = getAzureCredential();
 
         // Azure SDK client builders accept the credential as a parameter.
-        SecretClient secretClient = new SecretClientBuilder()
+        CertificateClient certificateClient = new CertificateClientBuilder()
             .vaultUrl(keyVaultUrl)
             .credential(credential)
             .buildClient();
 
-        String secret = secretClient.getSecret(secretName).getValue();
+        CertificatePolicy certPolicy = certificateClient.getCertificatePolicy(certName);
 
-        return secret;
+        return certPolicy.getSubject();
     }
 
 
