@@ -6,7 +6,7 @@ You can find the original documentation of the sample at https://github.com/quar
 
 Key Vault Tester can access three different vaults, depending on the value of the "Environment" property, which can be *Dev*, *Stage* or *Prod*.  The vault URL for each vault must be provided in the respective properties.  All properties are defined in the `application.properties' file. 
 
-For *Dev* environments, it is assumed that the code will run outside Azure, hence the authentication against the key vault must be done via an Azure service principal.  The *clientId*, *clientSecret* and *tenantId* values for the principal are also defined in the `application.properties` file.   For the other environments, it is assumed that the code will run inside an Azure Container App and will leverage Azure's managed identities to be granted access to the key vault.
+For *Dev* environments, it is assumed that the code will run outside Azure, hence the authentication against the key vault must be done via an Azure service principal.  The *clientId*, *clientSecret* and *tenantId* values for the principal are defined in the `application.properties` file (and can be overriden by respective environmental variables as needed).   For the other environments, it is assumed that the code will run inside an Azure Container App and will leverage Azure's managed identities to be granted access to the key vault.
 
 KeyVaultTester by default listens at port 8080 and has the following GET endpoints:
 - `/keyvault/secret/{secretName}`, which returns the value of a secret 
