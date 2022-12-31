@@ -30,7 +30,6 @@
   </properties>
   <dependencyManagement>
     <dependencies>
-   
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -47,7 +46,8 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>      
-      <!-- END - Needed for accessing Azure resources -->        
+      <!-- END - Needed for accessing Azure resources -->      
+
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -87,7 +87,6 @@
       <groupId>com.azure</groupId>
       <artifactId>azure-security-keyvault-certificates</artifactId>
     </dependency>    
-
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.annotation</artifactId>
